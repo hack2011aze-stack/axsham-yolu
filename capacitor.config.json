@@ -1,0 +1,6 @@
+{
+  "appId": "com.axshamyolu.oyun",
+  "appName": "Axşam Yolu",
+  "webDir": ".",
+  "bundledWebRuntime": false
+}
