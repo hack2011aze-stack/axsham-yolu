@@ -3,15 +3,25 @@ workflows:
     name: Android AAB Build
     max_build_duration: 30
     scripts:
+      - name: Prepare web folder
+        script: |
+          mkdir -p www
+          cp index.html www/index.html
       - name: Install dependencies
         script: npm install
       - name: Add Android platform
         script: npx cap add android
       - name: Sync Capacitor
         script: npx cap sync android
-      - name: Build Android AAB
+      - name: Build and Sign Android AAB
         script: |
           cd android
           ./gradlew bundleRelease
+          cd ..
+          AAB_FILE=$(find android/app/build/outputs/bundle/release -name "*.aab" | head -n 1)
+          keytool -genkey -v -keystore axsham-yolu.jks -keyalg RSA -keysize 2048 -validity 10000 -alias axsham -storepass axsham123 -keypass axsham123 -dname "CN=Axsham Yolu, OU=Game, O=Axsham, L=Baku, S=Baku, C=AZ"
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore axsham-yolu.jks -storepass axsham123 -keypass axsham123 "$AAB_FILE" axsham
+          cp "$AAB_FILE" axsham-yolu.aab
     artifacts:
-      - android/app/build/outputs/bundle/release/*.aab
+      - axsham-yolu.aab
+      - axsham-yolu.jks
